@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import*
 import sys
 from tkinter.filedialog import askopenfile
 
@@ -33,23 +33,11 @@ import random
 from sklearn.cross_decomposition import PLSCanonical
 from sklearn import svm
 import pickle
-
-from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
 from sklearn.neighbors import KNeighborsClassifier
-
-
-def load():
-    global cimg
-    x1=[]
-    shw=cimg.copy()
-    shw=cv2.resize(shw,(500,500))
-    cv2.imshow("Selected vehicle",shw)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
 def pp(a):
-    global mylist
-    mylist.insert(END, a)
+    pass
+    #global mylist
+    #mylist.insert(END, a)
 
 def salt_pepper(prob, img_gs):
     # Extract image dimensions
@@ -112,10 +100,10 @@ def training():
     X_train, X_test, Y_train, Y_test = model_selection.train_test_split(x, y, test_size=0.25, random_state=7)
     print ("OK")
     svc = svm.SVC(kernel='linear', C=1.0)
-    svc.fit(x,y) #should change into X_train,Y_train
+    svc.fit(x,y)
     knn = KNeighborsClassifier(n_neighbors=3) 
   
-    knn.fit(x,y)  #should change into X_train,Y_train
+    knn.fit(x,y) 
     #print svc.score(X_train, Y_train)
 
     # save the model to disk
@@ -166,7 +154,7 @@ def train_new():
         if not os.path.exists(target_dir):
           os.mkdir(target_dir)
         # Store the resultant image as 'sp_05.jpg'
-        cv2.imwrite('pre/p_'+str(a)+'.jpg', sp_05)
+        cv2.imwrite('pre/p_'+str(a)+'.jpg', img)
         data.append(np.array(img).flatten())
         ll=imgs.split(os.path.sep)[-2]
         lbl.append(int(ll))
@@ -174,13 +162,13 @@ def train_new():
         a+=1
     x=np.array(data)
     y=np.array(lbl)
-    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(x, y, test_size=0.3, random_state=7)
+    X_train, X_test, Y_train, Y_test = model_selection.train_test_split(x, y, test_size=0.25, random_state=7)
     print ("OK")
     svc = svm.SVC(kernel='linear', C=1.0)
-    svc.fit(X_train,Y_train) #should change into X_train,Y_train
+    svc.fit(x,y)
     knn = KNeighborsClassifier(n_neighbors=3) 
   
-    knn.fit(X_train,Y_train) #should change into X_train,Y_train
+    knn.fit(x,y) 
     #print svc.score(X_train, Y_train)
 
     # save the model to disk
@@ -193,21 +181,6 @@ def train_new():
     print (knn.score(X_train, Y_train))
     print ("Accuracy on testing set:")
     print (knn.score(X_test, Y_test))
-
-    #my svc accurancy
-    print("Accuracy on training set:")
-    print(svc.score(X_train, Y_train))
-    print("Accuracy on testing set:")
-    print(svc.score(X_test, Y_test))
-    #----
-
-    ## newly added may cause error
-    y_pred = svc.predict(X_test)
-    print("Confusion Matrix: \n", confusion_matrix(Y_test, y_pred))
-    print("Accuracy :\n", accuracy_score(Y_test, y_pred) * 100)
-    print("Report : \n", classification_report(Y_test, y_pred))
-    ##
-
     root.after(500, lambda : pp("Data Set Loaded Properly."))
     
     root.after(1000, lambda : pp("All the datas are processing."))
@@ -221,12 +194,24 @@ def train_new():
     
 
 def testing():
-    global lbl, txtdisplay
-    path = filedialog.askopenfilename(initialdir="C:/user/aparn/Downloads/", title="choose your file")
-    print (path)
-    txtdisplay.insert(END, path)
-    img = cv2.imread(path)
-    img=cv2.resize(img,(500,500))
+    global lbl, txtdisplay,img
+    #path =  filedialog.askopenfilename(initialdir = "E:/Projects 2020/",title = "choose your file")
+    #print (path)
+    #txtdisplay.delete("1.0", "end")
+    #txtdisplay.insert(END, path)
+    #cimg=cv2.imread(path)
+    # resize the image
+    img = cv2.resize(img, (500, 500))
+    #img = Image.open(filename)
+
+
+
+    #cv2.imshow("currency",img)
+    #canvas.create_image(20, 20, anchor=NW, image=img)
+
+
+
+
     edges = cv2.Canny(img,100,200)
 
 
@@ -248,27 +233,33 @@ def testing():
     #merging l clahe and a,b channel of lab
     n=cv2.merge([cl,a,b])
     sp_05 = salt_pepper(0.5, img)
-    
-    loaded_model = pickle.load(open('finalized_modelsvm.sav', 'rb'))
 
+    #canvas = Canvas(root, width=300, height=300)
+    #canvas.pack()
+    #img = ImageTk.PhotoImage(img)
+    #canvas.create_image(20, 20, anchor=NW, image=img)
+    #canvas.place(x=500, y=450)
+
+    loaded_model = pickle.load(open('finalized_modelsvm.sav', 'rb'))
     result= loaded_model.predict([np.array(img).flatten()])
     print (str(result[0]))
     if result[0]==0:
-        result="2000 Rupee Note"
+        result="2000 Rupee Real Note"
     if result[0]==1:
         result="2000 Rupee Fake Note"
     if result[0]==2:
-        result="100 Rupee Note"
+        result="100 Rupee Real Note"
     if result[0]==3:
         result="100 Rupee Fake Note"
     if result[0]==4:
-        result="200 Rupee Note"
+        result="200 Rupee Real Note"
     if result[0]==5:
         result="200 Rupee Fake Note"
     if result[0]==6:
-        result="500 Rupee Note"
+        result="500 Rupee Real Note"
     if result[0]==7:
         result="500 Rupee Fake Note"
+    
 
     print (result)
     lbl.delete("1.0", "end")
@@ -282,12 +273,21 @@ def testing():
     root.after(3500, lambda : pp("Result: "+result))
     
     root.after(5500, lambda : pp("________________________________________"))
+
+    cv2.waitKey(10000)
+
+    panel.destroy()
+
+    return img
     
     
     
 ##train_new()
 ##testing("5imagef.jpg")
-    
+
+
+
+
 
     
 
@@ -308,49 +308,105 @@ lblinfo.place(x=400,y=10)
 lblinfo = Label(root, font=( 'aria' ,20, ),text=localtime,bg="white",fg="black",anchor=W)
 lblinfo.place(x=450,y=80)
 
-lblin = Label(root, font=( 'aria' ,15, 'bold' ),text="Train with Dataset",bg="white",fg="black",bd=10,anchor='w')
-lblin.place(x=140,y=220)
+#lblin = Label(root, font=( 'aria' ,15, 'bold' ),text="Train with Dataset",bg="white",fg="black",bd=10,anchor='w')
+#lblin.place(x=140,y=220)
 
-btntrn=Button(root,padx=16,pady=8, bd=10 ,bg="#3dbaea",fg="black",font=('ariel' ,16,'bold'),width=10, text="TRAIN", command=lambda:train_new())
-btntrn.place(x=150, y=160)
-
-
-lbli = Label(root, font=( 'aria' ,15, 'bold' ),text="Test Your Currency",bg="white",fg="black",bd=10,anchor='w')
-
-lbli.place(x=150,y=310)
+#btntrn=Button(root,padx=16,pady=8, bd=10 ,bg="#3dbaea",fg="black",font=('ariel' ,16,'bold'),width=10, text="TRAIN", command=lambda:train_new())
+#btntrn.place(x=150, y=260)
 
 
-txtdisplay = Entry(root,font=('ariel' ,20,'bold') , bd=5 ,insertwidth=7 ,bg="white",justify='right')
-txtdisplay.place(x=80,y=350)
+
+#lbli = Label(root, font=( 'aria' ,15, 'bold' ),text="Test Your Currency",bg="white",fg="black",bd=10,anchor='w')
+#lbli.place(x=150,y=310)
+
+#txtdisplay = Entry(root,font=('ariel' ,20,'bold') , bd=5 ,insertwidth=7 ,bg="white",justify='right')
+#txtdisplay.place(x=80,y=350)
+
+#
+
 
 image11 = Image.open("up.png")
 image12 = image11.resize((20, 20), Image.ANTIALIAS) ## The (550, 250) is (height, width)
 pic12 = ImageTk.PhotoImage(image12)
 
-btntrn=Button(root,padx=16,pady=8, bd=10 ,bg="#3dbaea",fg="black",font=('ariel' ,10,'bold'),width=20, text = 'Upload', image = pic12, command=lambda: testing())
-btntrn.place(x=400, y=350)
+btntrn=Button(root,padx=16,pady=8, bd=10 ,bg="#3dbaea",fg="black",font=('ariel' ,16,'bold'),width=12, text = 'Predict', command=lambda: testing())
+btntrn.place(x=150, y=300)
+
+
+
+
+
+
+
+def openfn():
+    global filename
+    #filename = filedialog.askopenfilename(title='open')
+    filename = filedialog.askopenfilename(title='open')
+    return filename
+
+def open_img():
+    #global cimg
+    #x= openfn()
+    #print(img)
+    #img = Image.open(x)
+    #img = img.resize((500,300), Image.ANTIALIAS)
+    #img = ImageTk.PhotoImage(img)
+    #panel = Label(root, image=img)
+    #panel.image = img
+    #panel.place(x=150,y=400)
+    #panel.pack(padx=20, pady=20, side=RIGHT)
+    global img,panel
+    x1 = []
+    path = askopenfile()
+    n = path.name
+    img = cv2.imread(n)
+    shw=Image.open(n)
+    #shw = img.copy()
+    shw = shw.resize((500,300),Image.ANTIALIAS)
+    shw = ImageTk.PhotoImage(shw)
+    panel = Label(root, image=shw)
+    panel.image = shw
+    panel.pack(padx=20, pady=20, side=RIGHT)
+
+    #cv2.imshow("Selected currency", shw)
+    #cv2.waitKey(0)
+
+
+
+
+btntrn=Button(root,padx=16,pady=8, bd=10 ,bg="#3dbaea",fg="black",font=('ariel' ,16,'bold'),width=12, text = 'Test Your Currency', command=lambda: open_img())
+btntrn.place(x=150, y=160)
+
+
+
+
+
+
+
+
+
 
 
 lbl = Text(root, font=( 'aria' ,20, 'bold' ),bg="white",fg="black",bd=10, height=4, width=50)
 lbl.place(x=140,y=500)
-
-
-
-
 
 def qexit():
     root.destroy()
 
 
 
-mylist = Listbox(root,width=70, height=20, bg="#75eeff" )
+#mylist = Listbox(root,width=70, height=20, bg="#75eeff" )
 
-mylist.place( x = 880, y = 100 )
+#mylist.place( x = 880, y = 100 )
 
 
 
 btnexit=Button(root,padx=16,pady=8, bd=10 ,bg="#3dbaea",fg="black",font=('ariel' ,16,'bold'),width=10, text="EXIT",command=qexit)
 btnexit.place(x=1000, y=500)
+
+
+
+
 
 
 root.mainloop()
